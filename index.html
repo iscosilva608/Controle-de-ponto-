@@ -2,96 +2,162 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ponto Inteligente - Stefanny</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ponto Profissional - Stefanny</title>
     <style>
-        :root { --primary: #4a7ebb; --bg: #f0f2f5; --danger: #dc3545; --success: #28a745; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
-        .container { width: 100%; max-width: 1150px; background: white; margin: auto; border: 2px solid var(--primary); border-radius: 8px; overflow: hidden; }
-        header { background: var(--primary); color: white; text-align: center; padding: 15px; font-weight: bold; text-transform: uppercase; }
-        .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); background: #d9e1f2; }
-        .summary-item { padding: 10px; border: 0.5px solid #8faadc; text-align: center; }
-        .summary-label { font-size: 0.7rem; font-weight: bold; display: block; margin-bottom: 5px; }
-        .input-carga { width: 85px; font-size: 1rem; text-align: center; border-radius: 4px; border: 1px solid var(--primary); padding: 2px; }
+        :root { --primary: #4a7ebb; --bg: #f0f2f5; --danger: #dc3545; --success: #28a745; --warning: #856404; }
+        
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding: 10px; color: #333; }
+        
+        .container { width: 100%; max-width: 1000px; background: white; margin: auto; border: 1px solid var(--primary); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        header { background: var(--primary); color: white; text-align: center; padding: 18px; font-weight: bold; text-transform: uppercase; font-size: 1.1rem; }
+
+        /* Dados Pessoais - Adaptável */
+        .info-header { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 20px; background: #fff; border-bottom: 1px solid #eee; }
+        .info-group { display: flex; flex-direction: column; }
+        .info-group label { font-size: 0.65rem; font-weight: 800; color: var(--primary); text-transform: uppercase; margin-bottom: 4px; }
+        .info-group input { border: none; border-bottom: 2px solid #e0e0e0; padding: 6px 0; font-size: 1rem; outline: none; transition: 0.3s; width: 100%; }
+        .info-group input:focus { border-bottom-color: var(--primary); }
+
+        /* Filtros e Avisos */
+        .filter-section { background: #eef3f9; padding: 15px; text-align: center; border-bottom: 1px solid #ddecff; }
+        .filter-section select { padding: 10px 15px; border-radius: 8px; border: 1.5px solid var(--primary); font-weight: bold; font-size: 1rem; width: 100%; max-width: 300px; cursor: pointer; }
+
+        .importante-box { background: #fff9e6; color: #7a5f00; padding: 12px; font-size: 0.75rem; border-left: 4px solid #ffcc00; margin: 15px; border-radius: 4px; line-height: 1.4; }
+
+        /* Grade de Resumo */
+        .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: #ddd; border-bottom: 1px solid #ddd; }
+        .summary-item { padding: 15px 10px; background: #fff; text-align: center; }
+        .summary-label { font-size: 0.65rem; font-weight: bold; color: #666; display: block; margin-bottom: 5px; }
+        .val-resumo { font-weight: 800; font-size: 1.2rem; display: block; }
+
+        /* Estilo da Tabela - Desktop */
         table { width: 100%; border-collapse: collapse; }
-        th { background: var(--primary); color: white; padding: 10px; font-size: 0.8rem; }
-        td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-        
-        /* Ajuste da coluna de data e calendário */
-        .col-data { width: 160px; }
-        .input-date-select { border: 1px solid #ccc !important; border-radius: 4px; padding: 2px; font-family: inherit; font-size: 0.85rem; width: 95%; }
-        .dia-semana-label { font-size: 0.75rem; font-weight: bold; color: var(--primary); display: block; margin-top: 3px; }
+        thead th { background: #f1f5f9; color: var(--primary); padding: 12px; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--primary); }
+        tbody td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
 
-        input { border: none; text-align: center; font-size: 0.95rem; background: transparent; padding: 5px 0; outline: none; }
-        input:focus { background: #fff9c4; border-radius: 4px; }
-        .res-col { font-weight: bold; background: #f8f9fa; }
-        .dia-especial { background-color: #fff2cc !important; }
-        
-        .btn-container { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        button { padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-add { background: var(--primary); color: white; }
-        .btn-print { background: #6c757d; color: white; }
-        .btn-del { background: var(--danger); color: white; padding: 5px 10px; border-radius: 4px; }
+        .input-date-select { border: 1px solid #ddd; border-radius: 6px; padding: 5px; width: 100%; font-size: 0.9rem; }
+        input[type="time"] { border: 1.5px solid #eee; border-radius: 6px; padding: 5px; font-size: 1rem; width: 85px; text-align: center; }
 
-        @media (max-width: 750px) {
-            thead { display: none; }
-            tr { display: block; margin-bottom: 15px; border: 2px solid var(--primary); border-radius: 8px; padding: 10px; background: #fff; }
-            td { display: flex; justify-content: space-between; align-items: center; border: none; border-bottom: 1px solid #eee; padding: 10px 5px; }
-            td::before { content: attr(data-label); font-weight: bold; color: var(--primary); font-size: 0.8rem; }
-            .input-date-select { width: 55%; text-align: right; }
-            input { width: 55%; text-align: right; }
+        .res-bold { font-weight: bold; font-size: 1rem; }
+        .btn-del { background: #fee2e2; color: #dc2626; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        /* --- MÁGICA DO CELULAR (RESPONSIVIDADE) --- */
+        @media (max-width: 768px) {
+            thead { display: none; } /* Esconde o topo da tabela no celular */
+            
+            tbody tr { 
+                display: block; 
+                margin: 15px; 
+                padding: 10px; 
+                border: 1.5px solid #e2e8f0; 
+                border-radius: 12px; 
+                background: #fff;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            }
+
+            tbody td { 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center; 
+                border: none; 
+                padding: 12px 5px; 
+                border-bottom: 1px solid #f8fafc;
+                text-align: right;
+            }
+
+            tbody td:last-child { border-bottom: none; justify-content: center; padding-top: 15px; }
+
+            /* Adiciona o título do campo à esquerda no mobile */
+            tbody td::before { 
+                content: attr(data-label); 
+                font-weight: 800; 
+                color: var(--primary); 
+                font-size: 0.75rem; 
+                text-transform: uppercase;
+                flex: 1;
+                text-align: left;
+            }
+
+            .input-date-select, input[type="time"] { 
+                width: 60% !important; 
+                text-align: right; 
+                background: #fdfdfd;
+                border: 1px solid #cbd5e1;
+            }
+            
+            .dia-semana-label { font-size: 0.7rem; color: #64748b; margin-top: 2px; }
+            .btn-del { width: 100%; padding: 12px; }
         }
+
+        .btn-container { padding: 20px; display: grid; gap: 12px; }
+        .btn-main { padding: 15px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; }
+        .btn-add { background: var(--primary); color: white; }
+        .btn-print { background: #334155; color: white; }
+        
+        @media print { .filter-section, .btn-container, .col-acao, .btn-del { display: none !important; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header>Controle de Ponto - Edição 2026</header>
+    <header>Controle de Ponto - Relatório Mensal</header>
+    
+    <div class="info-header">
+        <div class="info-group"><label>Colaborador(a)</label><input type="text" value="Jennifer"></div>
+        <div class="info-group"><label>Empresa</label><input type="text" placeholder="Nome da Empresa"></div>
+        <div class="info-group"><label>Cargo</label><input type="text" placeholder="Ex: Auxiliar Administrativo"></div>
+        <div class="info-group"><label>ID / Matrícula</label><input type="text" placeholder="000.000.000-00"></div>
+    </div>
+
+    <div class="filter-section">
+        <select id="filtro-mes" onchange="calcular()">
+            <option value="todos">Todos os Meses</option>
+            <option value="01">Janeiro</option><option value="02">Fevereiro</option>
+            <option value="03">Março</option><option value="04" selected>Abril</option>
+            <option value="05">Maio</option><option value="06">Junho</option>
+            <option value="07">Julho</option><option value="08">Agosto</option>
+            <option value="09">Setembro</option><option value="10">Outubro</option>
+            <option value="11">Novembro</option><option value="12">Dezembro</option>
+        </select>
+    </div>
+
+    <div class="importante-box">
+        <b>DICA IMPORTANTE:</b> Finais de semana e feriados nacionais de 2026 são calculados automaticamente como <b>100% Extra</b>. Confira seus horários antes de gerar o PDF.
+    </div>
+
     <div class="summary-grid">
-        <div class="summary-item">
-            <span class="summary-label">CARGA DIÁRIA PADRÃO</span>
-            <input type="time" id="carga-horaria" class="input-carga" value="08:00" oninput="calcular()">
-        </div>
-        <div class="summary-item">
-            <span class="summary-label">INFORMAÇÃO</span>
-            <span style="font-size: 0.65rem; color: #555;">Sáb/Dom/Feriado = 100% Extra</span>
-        </div>
-        <div class="summary-item" style="background: #fff2cc;">
-            <span class="summary-label">TOTAL EXTRAS</span>
-            <span id="total-extras-geral" style="font-weight: bold;">00:00</span>
-        </div>
-        <div class="summary-item" style="background: #f8d7da;">
-            <span class="summary-label">TOTAL ATRASOS</span>
-            <span id="total-atrasos-geral" style="font-weight: bold;">00:00</span>
-        </div>
+        <div class="summary-item"><span class="summary-label">TOTAL EXTRAS</span><span id="total-extras-geral" class="val-resumo" style="color: var(--success);">00:00</span></div>
+        <div class="summary-item"><span class="summary-label">TOTAL ATRASOS</span><span id="total-atrasos-geral" class="val-resumo" style="color: var(--danger);">00:00</span></div>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th class="col-data">Data / Calendário</th>
+                <th style="width: 180px;">Data</th>
                 <th>Entrada</th>
-                <th>S.Almoço</th>
-                <th>R.Almoço</th>
-                <th>S.Final</th>
+                <th>S. Almoço</th>
+                <th>R. Almoço</th>
+                <th>S. Final</th>
                 <th>Total</th>
                 <th>Extra</th>
-                <th>Atraso</th>
-                <th>Ação</th>
+                <th class="col-acao">Ação</th>
             </tr>
         </thead>
         <tbody id="ponto-body"></tbody>
     </table>
 
     <div class="btn-container">
-        <button class="btn-add" onclick="adicionarLinha()">+ Adicionar Dia</button>
-        <button class="btn-print" onclick="window.print()">Gerar PDF / Imprimir</button>
+        <button class="btn-main btn-add" onclick="adicionarLinha()">+ Adicionar Dia</button>
+        <button class="btn-main btn-print" onclick="window.print()">Gerar PDF para Assinatura</button>
     </div>
 </div>
 
 <script>
     const feriados2026 = ["01-01", "02-17", "04-03", "04-21", "05-01", "06-04", "09-07", "10-12", "11-02", "11-15", "11-20", "12-25"];
-
+    
     function hParaMin(hora) {
         if (!hora) return 0;
         const [h, m] = hora.split(':').map(Number);
@@ -106,47 +172,43 @@
 
     function calcular() {
         const linhas = document.querySelectorAll('#ponto-body tr');
-        const cargaPadraoMin = hParaMin(document.getElementById('carga-horaria').value);
+        const cargaPadraoMin = 480; // 8 horas
+        const mesFiltro = document.getElementById('filtro-mes').value;
         let extras = 0; let atrasos = 0;
-        const diasSemanaNomes = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+        const diasNomes = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 
         linhas.forEach(linha => {
-            const dateInput = linha.querySelector('.input-date-select');
-            const dataValor = dateInput.value; // Formato YYYY-MM-DD
+            const dataVal = linha.querySelector('.input-date-select').value;
+            if (!dataVal) return;
+
+            const mesData = dataVal.split('-')[1];
+            if (mesFiltro !== "todos" && mesData !== mesFiltro) {
+                linha.style.display = "none";
+                return;
+            } else {
+                linha.style.display = window.innerWidth <= 768 ? "block" : "table-row";
+            }
+
+            const dataObj = new Date(dataVal + 'T12:00:00');
+            const diaIndex = dataObj.getDay();
+            linha.querySelector('.dia-semana-label').innerText = `(${diasNomes[diaIndex]})`;
+
+            const ehEspecial = (diaIndex === 0 || diaIndex === 6 || feriados2026.includes(dataVal.slice(5)));
+            const cargaEfetiva = ehEspecial ? 0 : cargaPadraoMin;
             
-            if (!dataValor) return;
-
-            const dataObj = new Date(dataValor + 'T12:00:00'); // T12:00 evita erros de fuso horário
-            const diaSemanaIndex = dataObj.getDay();
-            const diaMesFormatado = dataValor.slice(5); // Pega MM-DD
-
-            // Atualiza o texto do dia da semana abaixo do calendário
-            linha.querySelector('.dia-semana-label').innerText = `(${diasSemanaNomes[diaSemanaIndex]})`;
-
-            const ehFimDeSemana = diaSemanaIndex === 0 || diaSemanaIndex === 6;
-            const ehFeriado = feriados2026.includes(diaMesFormatado);
-            const cargaEfetiva = (ehFimDeSemana || ehFeriado) ? 0 : cargaPadraoMin;
-
-            if(ehFimDeSemana || ehFeriado) linha.classList.add('dia-especial');
+            if(ehEspecial) linha.classList.add('dia-especial');
             else linha.classList.remove('dia-especial');
 
             const inputs = linha.querySelectorAll('input[type="time"]');
-            // Nota: inputs[0] é o da carga lá no topo, os da linha começam do index 1 no seletor interno
-            const hEnt = hParaMin(inputs[0].value);
-            const hSAlm = hParaMin(inputs[1].value);
-            const hRAlm = hParaMin(inputs[2].value);
-            const hSFin = hParaMin(inputs[3].value);
-
-            const totalMin = (hSAlm - hEnt) + (hSFin - hRAlm);
+            const total = (hParaMin(inputs[1].value) - hParaMin(inputs[0].value)) + (hParaMin(inputs[3].value) - hParaMin(inputs[2].value));
 
             let e = 0, a = 0;
-            if (totalMin > cargaEfetiva) e = totalMin - cargaEfetiva;
-            else if (totalMin < cargaEfetiva) a = cargaEfetiva - totalMin;
+            if (total > cargaEfetiva) e = total - cargaEfetiva;
+            else if (total < cargaEfetiva) a = cargaEfetiva - total;
 
             extras += e; atrasos += a;
-            linha.querySelector('.total-dia').innerText = minParaH(Math.max(0, totalMin));
+            linha.querySelector('.total-dia').innerText = minParaH(Math.max(0, total));
             linha.querySelector('.extra-dia').innerText = minParaH(e);
-            linha.querySelector('.atraso-dia').innerText = minParaH(a);
         });
 
         document.getElementById('total-extras-geral').innerText = minParaH(extras);
@@ -156,27 +218,20 @@
     function adicionarLinha() {
         const tbody = document.getElementById('ponto-body');
         const tr = document.createElement('tr');
-        
-        // Data de hoje para o input date (YYYY-MM-DD)
-        const hoje = new Date();
-        const yyyy = hoje.getFullYear();
-        const mm = String(hoje.getMonth() + 1).padStart(2, '0');
-        const dd = String(hoje.getDate()).padStart(2, '0');
-        const dataHojeStr = `${yyyy}-${mm}-${dd}`;
+        const hoje = new Date().toISOString().split('T')[0];
 
         tr.innerHTML = `
-            <td data-label="Data" class="col-data">
-                <input type="date" class="input-date-select" value="${dataHojeStr}" oninput="calcular()">
-                <span class="dia-semana-label"></span>
+            <td data-label="Data">
+                <input type="date" class="input-date-select" value="${hoje}" oninput="calcular()">
+                <div class="dia-semana-label"></div>
             </td>
             <td data-label="Entrada"><input type="time" value="07:00" oninput="calcular()"></td>
             <td data-label="S. Almoço"><input type="time" value="12:00" oninput="calcular()"></td>
             <td data-label="R. Almoço"><input type="time" value="13:00" oninput="calcular()"></td>
             <td data-label="S. Final"><input type="time" value="16:00" oninput="calcular()"></td>
-            <td data-label="Total" class="res-col total-dia">08:00</td>
-            <td data-label="Extra" class="res-col extra-dia" style="color:var(--success)">00:00</td>
-            <td data-label="Atraso" class="res-col atraso-dia" style="color:var(--danger)">00:00</td>
-            <td class="col-acao"><button class="btn-del" onclick="if(confirm('Apagar dia?')) {this.closest('tr').remove(); calcular();}">X</button></td>
+            <td data-label="Total" class="res-bold total-dia">08:00</td>
+            <td data-label="Extra" class="res-bold extra-dia" style="color:var(--success)">00:00</td>
+            <td class="col-acao"><button class="btn-del" onclick="this.closest('tr').remove(); calcular();">APAGAR</button></td>
         `;
         tbody.appendChild(tr);
         calcular();
