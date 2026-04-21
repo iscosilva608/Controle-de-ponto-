@@ -2,79 +2,84 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Controle de Ponto - Relatório Mensal</title>
     <style>
         :root { --primary: #4a7ebb; --bg: #f0f2f5; --danger: #dc3545; --success: #28a745; --warning: #fff9db; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: var(--bg); margin: 0; padding: 0; }
 
-        nav { background: var(--primary); display: flex; sticky: top; z-index: 100; }
-        .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: #ffffffb3; font-weight: bold; cursor: pointer; border-bottom: 4px solid transparent; }
+        nav { background: var(--primary); display: flex; position: sticky; top: 0; z-index: 100; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: #ffffffb3; font-weight: bold; cursor: pointer; border-bottom: 4px solid transparent; font-size: 0.9rem; }
         .tab-btn.active { color: white; border-bottom-color: white; background: rgba(255,255,255,0.1); }
 
-        .container { width: 95%; max-width: 1000px; margin: 20px auto; display: none; }
+        .container { width: 95%; max-width: 1000px; margin: 15px auto; display: none; }
         .container.active { display: block; }
 
         .relatorio-shell { background: white; border-radius: 8px; border: 1px solid var(--primary); overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .rel-header { background: var(--primary); color: white; padding: 12px; text-align: center; font-weight: bold; text-transform: uppercase; }
+        .rel-header { background: var(--primary); color: white; padding: 12px; text-align: center; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; }
         
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; border-bottom: 1px solid #eee; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; border-bottom: 1px solid #eee; }
         .info-field { display: flex; flex-direction: column; border-bottom: 1px solid #ccc; }
-        .info-field label { font-size: 0.65rem; font-weight: bold; color: var(--primary); text-transform: uppercase; }
-        .info-field input { border: none; padding: 5px 0; font-size: 0.95rem; outline: none; background: transparent; }
+        .info-field label { font-size: 0.6rem; font-weight: bold; color: var(--primary); text-transform: uppercase; }
+        .info-field input { border: none; padding: 5px 0; font-size: 0.85rem; outline: none; background: transparent; width: 100%; }
 
         .month-selector { text-align: center; padding: 15px; background: #f8fafc; border-bottom: 1px solid #eee; }
-        .month-selector select { padding: 8px 20px; border-radius: 6px; border: 1px solid #ccc; font-weight: bold; color: #333; cursor: pointer; }
+        .month-selector select { padding: 8px 15px; border-radius: 6px; border: 1px solid #ccc; font-weight: bold; font-size: 0.9rem; }
 
-        .warning-box { background: var(--warning); border: 1px solid #ffe066; margin: 15px; padding: 10px; border-left: 5px solid #fab005; font-size: 0.75rem; color: #666; }
+        .warning-box { background: var(--warning); border: 1px solid #ffe066; margin: 10px; padding: 10px; border-left: 5px solid #fab005; font-size: 0.7rem; color: #666; }
 
         .summary-row { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #eee; border-bottom: 1px solid #eee; }
-        .summary-box { padding: 15px; text-align: center; }
-        .summary-box small { font-size: 0.7rem; font-weight: bold; color: #888; text-transform: uppercase; }
-        .summary-box div { font-size: 1.4rem; font-weight: bold; margin-top: 5px; }
+        .summary-box { padding: 12px; text-align: center; }
+        .summary-box small { font-size: 0.65rem; font-weight: bold; color: #888; text-transform: uppercase; }
+        .summary-box div { font-size: 1.2rem; font-weight: bold; margin-top: 3px; }
 
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #f1f5f9; color: var(--primary); padding: 12px 8px; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align: center; font-size: 0.85rem; }
-        .col-data { font-weight: bold; text-align: left; padding-left: 20px; }
-        .btn-apagar { color: var(--danger); border: none; background: #fff5f5; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: bold; }
+        /* AJUSTE PARA CELULAR: Scroll horizontal na tabela */
+        .table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; } /* Garante que a tabela não esmague */
+        
+        th { background: #f1f5f9; color: var(--primary); padding: 10px 5px; font-size: 0.65rem; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 8px 5px; border-bottom: 1px solid #eee; text-align: center; font-size: 0.8rem; }
+        .col-data { font-weight: bold; text-align: left; padding-left: 10px; min-width: 90px; }
+        
+        .btn-apagar { background: var(--danger); color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: bold; }
 
-        .card-lancamento { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px; }
-        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
-        .btn-acao { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 1rem; }
+        /* Lançamentos */
+        .card-lancamento { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 12px; }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .full-width { grid-column: span 2; }
+        .btn-acao { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 0.95rem; }
         .btn-add { background: white; color: var(--primary); border: 2px dashed var(--primary); }
         .btn-save { background: var(--primary); color: white; }
 
-        @media print { nav, .no-print, .btn-acao, .btn-apagar { display: none !important; } .container { width: 100%; margin: 0; } .relatorio-shell { border: none; } }
+        @media print { nav, .no-print, .btn-apagar, .btn-acao { display: none !important; } .table-container { overflow: visible; } table { min-width: 100%; } }
     </style>
 </head>
 <body>
 
 <nav class="no-print">
-    <button class="tab-btn active" onclick="verAba('registro', this)">✏️ Preencher Pontos</button>
-    <button class="tab-btn" onclick="verAba('relatorio', this)">📋 Ver Relatório</button>
+    <button class="tab-btn active" onclick="verAba('registro', this)">✏️ Preencher</button>
+    <button class="tab-btn" onclick="verAba('relatorio', this)">📋 Relatório</button>
 </nav>
 
 <div id="registro" class="container active">
     <div id="lista-lancamentos"></div>
-    <button class="btn-acao btn-add" onclick="novoCard()">+ Adicionar Novo Dia</button>
-    <button class="btn-acao btn-save" onclick="processarEnvio()">🔒 Fechar e Enviar para Relatório</button>
+    <button class="btn-acao btn-add" onclick="novoCard()">+ Adicionar Dia</button>
+    <button class="btn-acao btn-save" onclick="processarEnvio()">🔒 Enviar ao Relatório</button>
 </div>
 
 <div id="relatorio" class="container">
     <div class="relatorio-shell">
-        <div class="rel-header">Controle de Ponto - Relatório Mensal</div>
+        <div class="rel-header">Relatório Mensal de Ponto</div>
         
         <div class="info-grid">
             <div class="info-field"><label>Colaborador(a)</label><input type="text" value="Jennifer"></div>
-            <div class="info-field"><label>Empresa</label><input type="text" placeholder="Nome da Empresa"></div>
-            <div class="info-field"><label>Cargo / Função</label><input type="text" placeholder="Ex: Auxiliar Administrativo"></div>
-            <div class="info-field"><label>CPF / Matrícula</label><input type="text" placeholder="000.000.000-00"></div>
+            <div class="info-field"><label>Empresa</label><input type="text" placeholder="Empresa"></div>
+            <div class="info-field"><label>Cargo</label><input type="text" placeholder="Cargo"></div>
+            <div class="info-field"><label>CPF/ID</label><input type="text" placeholder="000.000.000-00"></div>
         </div>
 
         <div class="month-selector no-print">
-            <label style="font-size: 0.8rem; font-weight: bold; color: #666;">Selecione o Mês: </label>
             <select id="sel-mes" onchange="renderizarTabela()">
                 <option value="01">Janeiro</option><option value="02">Fevereiro</option>
                 <option value="03">Março</option><option value="04" selected>Abril</option>
@@ -85,38 +90,36 @@
             </select>
         </div>
 
-        <div class="warning-box">
-            <b>DICA IMPORTANTE:</b> Finais de semana e feriados nacionais de 2026 são calculados automaticamente como 100% Extra.
-        </div>
-
         <div class="summary-row">
-            <div class="summary-box"><small>Total Extras</small><div id="total-extra" style="color: var(--success)">00:00</div></div>
-            <div class="summary-box" style="border-left: 1px solid #eee;"><small>Total Atrasos</small><div id="total-atraso" style="color: var(--danger)">00:00</div></div>
+            <div class="summary-box"><small>Extras</small><div id="total-extra" style="color: var(--success)">00:00</div></div>
+            <div class="summary-box" style="border-left: 1px solid #eee;"><small>Atrasos</small><div id="total-atraso" style="color: var(--danger)">00:00</div></div>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th style="text-align: left; padding-left: 20px;">Data</th>
-                    <th>Entrada</th>
-                    <th>S. Almoço</th>
-                    <th>R. Almoço</th>
-                    <th>S. Final</th>
-                    <th>Total</th>
-                    <th>Extra/Atraso</th>
-                    <th class="no-print">Ação</th>
-                </tr>
-            </thead>
-            <tbody id="tabela-corpo"></tbody>
-        </table>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align: left; padding-left: 10px;">Data</th>
+                        <th>Ent.</th>
+                        <th>S. Alm</th>
+                        <th>R. Alm</th>
+                        <th>Sai.</th>
+                        <th>Total</th>
+                        <th>Saldo</th>
+                        <th class="no-print">Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-corpo"></tbody>
+            </table>
+        </div>
     </div>
     
-    <button class="btn-acao btn-save" style="background: #334155; margin-bottom: 50px;" onclick="window.print()">Gerar PDF para Assinatura</button>
+    <button class="btn-acao btn-save" style="background: #334155; margin-bottom: 50px;" onclick="window.print()">📥 Gerar PDF</button>
 </div>
 
 <script>
     let bancoDados = [];
-    const feriados2026 = ["01-01", "04-03", "04-21", "05-01", "09-07", "11-20", "12-25"];
+    const feriados = ["01-01", "04-03", "04-21", "05-01", "09-07", "11-20", "12-25"];
 
     function hParaMin(h) { if (!h) return 0; const [hrs, min] = h.split(':').map(Number); return (hrs * 60) + min; }
     function minParaH(m) { 
@@ -136,14 +139,13 @@
         const lista = document.getElementById('lista-lancamentos');
         const div = document.createElement('div');
         div.className = 'card-lancamento';
-        const hoje = new Date().toISOString().split('T')[0];
         div.innerHTML = `
-            <div style="display:flex; justify-content:space-between; color:var(--primary); font-weight:bold; font-size:0.8rem">
-                <span>LANÇAMENTO DE HORÁRIO</span>
+            <div style="display:flex; justify-content:space-between; color:var(--primary); font-weight:bold; font-size:0.75rem; margin-bottom:10px">
+                <span>NOVO REGISTRO</span>
                 <span style="cursor:pointer; color:red" onclick="this.closest('.card-lancamento').remove()">REMOVER</span>
             </div>
             <div class="grid-inputs">
-                <div class="info-field"><label>Data</label><input type="date" class="in-data" value="${hoje}"></div>
+                <div class="info-field full-width"><label>Data</label><input type="date" class="in-data" value="2026-04-21"></div>
                 <div class="info-field"><label>Entrada</label><input type="time" class="in-ent" value="07:00"></div>
                 <div class="info-field"><label>S. Almoço</label><input type="time" class="in-sal" value="12:00"></div>
                 <div class="info-field"><label>R. Almoço</label><input type="time" class="in-ral" value="13:00"></div>
@@ -154,70 +156,49 @@
 
     function processarEnvio() {
         const cards = document.querySelectorAll('.card-lancamento');
-        if(cards.length === 0) return alert("Adicione ao menos um dia!");
+        if(cards.length === 0) return;
 
         cards.forEach(card => {
             const data = card.querySelector('.in-data').value;
-            const h = {
-                ent: card.querySelector('.in-ent').value,
-                sal: card.querySelector('.in-sal').value,
-                ral: card.querySelector('.in-ral').value,
-                sfi: card.querySelector('.in-sfi').value
-            };
-
+            const h = { ent: card.querySelector('.in-ent').value, sal: card.querySelector('.in-sal').value, ral: card.querySelector('.in-ral').value, sfi: card.querySelector('.in-sfi').value };
             const trab = (hParaMin(h.sal) - hParaMin(h.ent)) + (hParaMin(h.sfi) - hParaMin(h.ral));
             const dObj = new Date(data + 'T12:00:00');
-            const ehExtra = (dObj.getDay() === 0 || dObj.getDay() === 6 || feriados2026.includes(data.slice(5)));
+            const ehExtra = (dObj.getDay() === 0 || dObj.getDay() === 6 || feriados.includes(data.slice(5)));
             const saldo = trab - (ehExtra ? 0 : 480);
-
             bancoDados.push({ data, ...h, trab, saldo });
         });
 
         document.getElementById('lista-lancamentos').innerHTML = '';
-        alert("Enviado para o relatório!");
         verAba('relatorio', document.querySelectorAll('.tab-btn')[1]);
     }
 
     function renderizarTabela() {
         const corpo = document.getElementById('tabela-corpo');
-        const mesSelecionado = document.getElementById('sel-mes').value;
+        const mesSel = document.getElementById('sel-mes').value;
         let ex = 0, at = 0;
         corpo.innerHTML = '';
 
-        // FILTRAGEM REAL AQUI
-        const dadosFiltrados = bancoDados.filter(item => {
-            const mesItem = item.data.split('-')[1]; // Pega o mês da string YYYY-MM-DD
-            return mesItem === mesSelecionado;
-        });
+        const filtrados = bancoDados.filter(item => item.data.split('-')[1] === mesSel);
 
-        dadosFiltrados.sort((a,b) => new Date(a.data) - new Date(b.data)).forEach((item, index) => {
+        filtrados.sort((a,b) => new Date(a.data) - new Date(b.data)).forEach((item) => {
             if(item.saldo > 0) ex += item.saldo; else at += Math.abs(item.saldo);
-            
             const d = new Date(item.data + 'T12:00:00');
-            const diaSemana = d.toLocaleDateString('pt-BR', {weekday: 'short'});
-
+            
             corpo.innerHTML += `
                 <tr>
-                    <td class="col-data">${item.data.split('-').reverse().join('/')}<br><small style="color:#888">(${diaSemana})</small></td>
+                    <td class="col-data">${item.data.split('-').reverse().slice(0,2).join('/')} <small>(${d.toLocaleDateString('pt-BR', {weekday: 'short'}).replace('.','')})</small></td>
                     <td>${item.ent}</td><td>${item.sal}</td><td>${item.ral}</td><td>${item.sfi}</td>
-                    <td><b>${minParaH(item.trab)}</b></td>
+                    <td>${minParaH(item.trab)}</td>
                     <td style="color:${item.saldo >= 0 ? 'green' : 'red'}"><b>${minParaH(item.saldo)}</b></td>
-                    <td class="no-print"><button class="btn-apagar" onclick="removerLinha('${item.data}')">APAGAR</button></td>
+                    <td class="no-print"><button class="btn-apagar" onclick="remover('${item.data}')">X</button></td>
                 </tr>`;
         });
-
-        if(dadosFiltrados.length === 0) {
-            corpo.innerHTML = '<tr><td colspan="8" style="padding:40px; color:#999">Nenhum registro para este mês.</td></tr>';
-        }
 
         document.getElementById('total-extra').innerText = minParaH(ex);
         document.getElementById('total-atraso').innerText = minParaH(at);
     }
 
-    function removerLinha(data) {
-        bancoDados = bancoDados.filter(i => i.data !== data);
-        renderizarTabela();
-    }
+    function remover(dt) { bancoDados = bancoDados.filter(i => i.data !== dt); renderizarTabela(); }
 
     novoCard();
 </script>
