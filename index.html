@@ -3,107 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Controle de Ponto - Relatório Mensal</title>
+    <title>Ponto Pro - Gestão de Horários</title>
     <style>
-        :root { --primary: #4a7ebb; --bg: #f0f2f5; --danger: #dc3545; --success: #28a745; --warning: #fff9db; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); margin: 0; padding: 0; }
+        :root { 
+            --primary: #2563eb; --primary-hover: #1d4ed8;
+            --bg: #f8fafc; --card-bg: #ffffff;
+            --text-main: #1e293b; --text-muted: #64748b;
+            --danger: #ef4444; --success: #22c55e;
+            --extra-bg: #eff6ff; --border: #e2e8f0;
+        }
 
-        nav { background: var(--primary); display: flex; position: sticky; top: 0; z-index: 100; }
-        .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: #ffffffb3; font-weight: bold; cursor: pointer; border-bottom: 4px solid transparent; font-size: 0.9rem; }
-        .tab-btn.active { color: white; border-bottom-color: white; background: rgba(255,255,255,0.1); }
+        * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; transition: all 0.2s ease; }
+        body { background: var(--bg); margin: 0; padding: 0; color: var(--text-main); }
 
-        .container { width: 95%; max-width: 1000px; margin: 15px auto; display: none; }
+        /* Navegação */
+        nav { background: var(--card-bg); display: flex; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-bottom: 1px solid var(--border); }
+        .tab-btn { flex: 1; padding: 16px; border: none; background: none; color: var(--text-muted); font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: rgba(37, 99, 235, 0.05); }
+
+        .container { width: 95%; max-width: 900px; margin: 20px auto; display: none; animation: fadeIn 0.3s ease; }
         .container.active { display: block; }
 
-        .relatorio-shell { background: white; border-radius: 8px; border: 1px solid var(--primary); overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .rel-header { background: var(--primary); color: white; padding: 12px; text-align: center; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Cards de Configuração e Lançamento */
+        .card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .card-title { font-size: 0.85rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
         
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; border-bottom: 1px solid #eee; }
-        .info-field { display: flex; flex-direction: column; border-bottom: 1px solid #ccc; }
-        .info-field label { font-size: 0.6rem; font-weight: bold; color: var(--primary); text-transform: uppercase; }
-        .info-field input { border: none; padding: 5px 0; font-size: 0.85rem; outline: none; background: transparent; width: 100%; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+        .field { display: flex; flex-direction: column; gap: 4px; }
+        .field label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
+        .field input, .field select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: #fcfcfd; }
+        .field input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
 
-        .month-selector { text-align: center; padding: 15px; background: #f8fafc; border-bottom: 1px solid #eee; }
-        .month-selector select { padding: 8px 15px; border-radius: 6px; border: 1px solid #ccc; font-weight: bold; font-size: 0.9rem; }
-
-        .warning-box { background: var(--warning); border: 1px solid #ffe066; margin: 10px; padding: 10px; border-left: 5px solid #fab005; font-size: 0.7rem; color: #666; }
-
-        .summary-row { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #eee; border-bottom: 1px solid #eee; }
-        .summary-box { padding: 12px; text-align: center; }
-        .summary-box small { font-size: 0.65rem; font-weight: bold; color: #888; text-transform: uppercase; }
-        .summary-box div { font-size: 1.2rem; font-weight: bold; margin-top: 3px; }
-
-        /* AJUSTE PARA CELULAR: Scroll horizontal na tabela */
-        .table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; } /* Garante que a tabela não esmague */
+        /* Relatório Estilizado */
+        .relatorio-shell { background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .rel-header { background: var(--primary); color: white; padding: 20px; text-align: center; font-weight: 800; font-size: 1.1rem; letter-spacing: 1px; }
         
-        th { background: #f1f5f9; color: var(--primary); padding: 10px 5px; font-size: 0.65rem; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 8px 5px; border-bottom: 1px solid #eee; text-align: center; font-size: 0.8rem; }
-        .col-data { font-weight: bold; text-align: left; padding-left: 10px; min-width: 90px; }
+        .info-display { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; padding: 20px; background: #fbfcfe; border-bottom: 1px solid var(--border); }
+        .info-group { display: flex; flex-direction: column; gap: 5px; }
+        .info-group b { font-size: 0.7rem; color: var(--primary); text-transform: uppercase; }
+        .info-group span { font-size: 0.95rem; font-weight: 500; }
+
+        .summary-row { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: #fff; }
+        .summary-box { padding: 20px; text-align: center; }
+        .summary-box small { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .summary-box div { font-size: 1.5rem; font-weight: 800; }
+
+        /* Tabela */
+        .table-container { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th { background: #f8fafc; color: var(--text-muted); padding: 12px 10px; font-size: 0.7rem; text-transform: uppercase; font-weight: 700; border-bottom: 2px solid var(--border); }
+        td { padding: 14px 10px; border-bottom: 1px solid var(--border); text-align: center; font-size: 0.85rem; }
         
-        .btn-apagar { background: var(--danger); color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: bold; }
+        .linha-extra { background-color: var(--extra-bg) !important; }
+        .col-data { font-weight: 700; text-align: left; padding-left: 20px; color: var(--text-main); }
 
-        /* Lançamentos */
-        .card-lancamento { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 12px; }
-        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .full-width { grid-column: span 2; }
-        .btn-acao { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 0.95rem; }
-        .btn-add { background: white; color: var(--primary); border: 2px dashed var(--primary); }
-        .btn-save { background: var(--primary); color: white; }
+        /* Botões */
+        .btn-acao { width: 100%; padding: 14px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; }
+        .btn-add { background: white; color: var(--primary); border: 2px dashed var(--primary); margin-bottom: 10px; }
+        .btn-add:hover { background: var(--extra-bg); }
+        .btn-save { background: var(--primary); color: white; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2); }
+        .btn-save:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-apagar { background: #fee2e2; color: var(--danger); border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 0.75rem; }
+        .btn-apagar:hover { background: var(--danger); color: white; }
 
-        @media print { nav, .no-print, .btn-apagar, .btn-acao { display: none !important; } .table-container { overflow: visible; } table { min-width: 100%; } }
+        @media print { 
+            nav, .no-print, .card, .btn-acao { display: none !important; } 
+            .container { width: 100%; margin: 0; max-width: 100%; }
+            .relatorio-shell { border: none; box-shadow: none; }
+            .linha-extra { background-color: #f0f7ff !important; -webkit-print-color-adjust: exact; }
+            body { background: white; }
+        }
+
+        @media (max-width: 600px) {
+            .grid { grid-template-columns: 1fr; }
+            .info-display { grid-template-columns: 1fr; gap: 10px; }
+        }
     </style>
 </head>
 <body>
 
 <nav class="no-print">
-    <button class="tab-btn active" onclick="verAba('registro', this)">✏️ Preencher</button>
-    <button class="tab-btn" onclick="verAba('relatorio', this)">📋 Relatório</button>
+    <button class="tab-btn active" onclick="verAba('registro', this)"><span>📝</span> REGISTROS</button>
+    <button class="tab-btn" onclick="verAba('relatorio', this)"><span>📊</span> RELATÓRIO PDF</button>
 </nav>
 
 <div id="registro" class="container active">
+    <div class="card no-print">
+        <div class="card-header"><span class="card-title">Configurações do Perfil</span></div>
+        <div class="grid">
+            <div class="field"><label>Nome do Colaborador</label><input type="text" id="cfg-nome" placeholder="Ex: Francisco Silva" oninput="salvarConfig()"></div>
+            <div class="field"><label>CPF / Matrícula</label><input type="text" id="cfg-cpf" placeholder="000.000.000-00" oninput="salvarConfig()"></div>
+            <div class="field"><label>Cargo</label><input type="text" id="cfg-cargo" placeholder="Ex: Desenvolvedor" oninput="salvarConfig()"></div>
+            <div class="field"><label>Carga Horária (Dia)</label><input type="time" id="cfg-carga" value="08:00" oninput="salvarConfig()"></div>
+            <div class="field"><label>Empresa</label><input type="text" id="cfg-empresa" placeholder="Nome da Empresa" oninput="salvarConfig()"></div>
+            <div class="field"><label>CNPJ</label><input type="text" id="cfg-cnpj" placeholder="00.000.000/0000-00" oninput="salvarConfig()"></div>
+        </div>
+    </div>
+
     <div id="lista-lancamentos"></div>
-    <button class="btn-acao btn-add" onclick="novoCard()">+ Adicionar Dia</button>
-    <button class="btn-acao btn-save" onclick="processarEnvio()">🔒 Enviar ao Relatório</button>
+    
+    <button class="btn-acao btn-add" onclick="novoCard()">+ Adicionar Novo Dia</button>
+    <button class="btn-acao btn-save" onclick="processarEnvio()">💾 Salvar e Gerar Relatório</button>
 </div>
 
 <div id="relatorio" class="container">
     <div class="relatorio-shell">
-        <div class="rel-header">Relatório Mensal de Ponto</div>
+        <div class="rel-header">CONTROLE DE PONTO MENSAL</div>
         
-        <div class="info-grid">
-            <div class="info-field"><label>Colaborador(a)</label><input type="text" value="Jennifer"></div>
-            <div class="info-field"><label>Empresa</label><input type="text" placeholder="Empresa"></div>
-            <div class="info-field"><label>Cargo</label><input type="text" placeholder="Cargo"></div>
-            <div class="info-field"><label>CPF/ID</label><input type="text" placeholder="000.000.000-00"></div>
+        <div class="info-display">
+            <div class="info-group">
+                <b>Colaborador</b> <span id="disp-nome">-</span>
+                <b>CPF / ID</b> <span id="disp-cpf">-</span>
+                <b>Cargo</b> <span id="disp-cargo">-</span>
+            </div>
+            <div class="info-group">
+                <b>Empresa</b> <span id="disp-empresa">-</span>
+                <b>CNPJ</b> <span id="disp-cnpj">-</span>
+                <b>Jornada Diária</b> <span id="disp-carga">08:00</span>
+            </div>
         </div>
 
         <div class="month-selector no-print">
-            <select id="sel-mes" onchange="renderizarTabela()">
-                <option value="01">Janeiro</option><option value="02">Fevereiro</option>
-                <option value="03">Março</option><option value="04" selected>Abril</option>
-                <option value="05">Maio</option><option value="06">Junho</option>
-                <option value="07">Julho</option><option value="08">Agosto</option>
-                <option value="09">Setembro</option><option value="10">Outubro</option>
-                <option value="11">Novembro</option><option value="12">Dezembro</option>
-            </select>
+            <div class="field" style="width: 200px; margin: 15px auto;">
+                <label>Mês de Referência</label>
+                <select id="sel-mes" onchange="renderizarTabela()">
+                    <option value="01">Janeiro</option><option value="02">Fevereiro</option>
+                    <option value="03">Março</option><option value="04" selected>Abril</option>
+                    <option value="05">Maio</option><option value="06">Junho</option>
+                    <option value="07">Julho</option><option value="08">Agosto</option>
+                    <option value="09">Setembro</option><option value="10">Outubro</option>
+                    <option value="11">Novembro</option><option value="12">Dezembro</option>
+                </select>
+            </div>
         </div>
 
         <div class="summary-row">
-            <div class="summary-box"><small>Extras</small><div id="total-extra" style="color: var(--success)">00:00</div></div>
-            <div class="summary-box" style="border-left: 1px solid #eee;"><small>Atrasos</small><div id="total-atraso" style="color: var(--danger)">00:00</div></div>
+            <div class="summary-box"><small>Total Extras (100%)</small><div id="total-extra" style="color: var(--success)">00:00</div></div>
+            <div class="summary-box" style="border-left: 1px solid var(--border);"><small>Total Atrasos</small><div id="total-atraso" style="color: var(--danger)">00:00</div></div>
         </div>
 
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
-                        <th style="text-align: left; padding-left: 10px;">Data</th>
-                        <th>Ent.</th>
-                        <th>S. Alm</th>
-                        <th>R. Alm</th>
-                        <th>Sai.</th>
+                        <th style="text-align: left; padding-left: 20px;">Data</th>
+                        <th>Entrada</th>
+                        <th>Almoço</th>
+                        <th>Retorno</th>
+                        <th>Saída</th>
                         <th>Total</th>
                         <th>Saldo</th>
                         <th class="no-print">Ação</th>
@@ -114,12 +164,34 @@
         </div>
     </div>
     
-    <button class="btn-acao btn-save" style="background: #334155; margin-bottom: 50px;" onclick="window.print()">📥 Gerar PDF</button>
+    <button class="btn-acao btn-save" style="background: #1e293b; margin-top: 30px;" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
 </div>
 
 <script>
-    let bancoDados = [];
-    const feriados = ["01-01", "04-03", "04-21", "05-01", "09-07", "11-20", "12-25"];
+    let bancoDados = JSON.parse(localStorage.getItem('ponto_v3_dados')) || [];
+    const feriados = ["01-01", "04-21", "05-01", "09-07", "10-12", "11-02", "11-15", "11-20", "12-25"];
+
+    window.onload = () => {
+        const campos = ['nome', 'cpf', 'cargo', 'carga', 'empresa', 'cnpj'];
+        campos.forEach(c => {
+            const val = localStorage.getItem('ponto_v3_' + c);
+            if(val) {
+                document.getElementById('cfg-' + c).value = val;
+                if(document.getElementById('disp-' + c)) document.getElementById('disp-' + c).innerText = val;
+            }
+        });
+        novoCard();
+    };
+
+    function salvarConfig() {
+        const campos = ['nome', 'cpf', 'cargo', 'carga', 'empresa', 'cnpj'];
+        campos.forEach(c => {
+            const val = document.getElementById('cfg-' + c).value;
+            localStorage.setItem('ponto_v3_' + c, val);
+            const disp = document.getElementById('disp-' + c);
+            if(disp) disp.innerText = val || '-';
+        });
+    }
 
     function hParaMin(h) { if (!h) return 0; const [hrs, min] = h.split(':').map(Number); return (hrs * 60) + min; }
     function minParaH(m) { 
@@ -138,37 +210,41 @@
     function novoCard() {
         const lista = document.getElementById('lista-lancamentos');
         const div = document.createElement('div');
-        div.className = 'card-lancamento';
+        div.className = 'card no-print';
         div.innerHTML = `
-            <div style="display:flex; justify-content:space-between; color:var(--primary); font-weight:bold; font-size:0.75rem; margin-bottom:10px">
-                <span>NOVO REGISTRO</span>
-                <span style="cursor:pointer; color:red" onclick="this.closest('.card-lancamento').remove()">REMOVER</span>
+            <div class="card-header">
+                <span class="card-title">Novo Lançamento</span>
+                <span style="cursor:pointer; color:var(--danger); font-size: 0.7rem; font-weight: bold;" onclick="this.closest('.card').remove()">REMOVER</span>
             </div>
-            <div class="grid-inputs">
-                <div class="info-field full-width"><label>Data</label><input type="date" class="in-data" value="2026-04-21"></div>
-                <div class="info-field"><label>Entrada</label><input type="time" class="in-ent" value="07:00"></div>
-                <div class="info-field"><label>S. Almoço</label><input type="time" class="in-sal" value="12:00"></div>
-                <div class="info-field"><label>R. Almoço</label><input type="time" class="in-ral" value="13:00"></div>
-                <div class="info-field"><label>S. Final</label><input type="time" class="in-sfi" value="16:00"></div>
+            <div class="grid">
+                <div class="field" style="grid-column: 1 / -1;"><label>Data do Expediente</label><input type="date" class="in-data" value="${new Date().toISOString().split('T')[0]}"></div>
+                <div class="field"><label>Entrada</label><input type="time" class="in-ent" value="07:00"></div>
+                <div class="field"><label>S. Almoço</label><input type="time" class="in-sal" value="12:00"></div>
+                <div class="field"><label>R. Almoço</label><input type="time" class="in-ral" value="13:00"></div>
+                <div class="field"><label>Saída Final</label><input type="time" class="in-sfi" value="16:00"></div>
             </div>`;
-        lista.appendChild(div);
+        lista.prepend(div);
     }
 
     function processarEnvio() {
-        const cards = document.querySelectorAll('.card-lancamento');
-        if(cards.length === 0) return;
+        const cards = document.querySelectorAll('#lista-lancamentos .card');
+        const cargaMinutos = hParaMin(document.getElementById('cfg-carga').value || "08:00");
 
         cards.forEach(card => {
             const data = card.querySelector('.in-data').value;
             const h = { ent: card.querySelector('.in-ent').value, sal: card.querySelector('.in-sal').value, ral: card.querySelector('.in-ral').value, sfi: card.querySelector('.in-sfi').value };
             const trab = (hParaMin(h.sal) - hParaMin(h.ent)) + (hParaMin(h.sfi) - hParaMin(h.ral));
             const dObj = new Date(data + 'T12:00:00');
-            const ehExtra = (dObj.getDay() === 0 || dObj.getDay() === 6 || feriados.includes(data.slice(5)));
-            const saldo = trab - (ehExtra ? 0 : 480);
-            bancoDados.push({ data, ...h, trab, saldo });
+            const ehExtraTotal = feriados.includes(data.slice(5)) || (dObj.getDay() === 0 || dObj.getDay() === 6);
+            const saldo = trab - (ehExtraTotal ? 0 : cargaMinutos);
+            
+            bancoDados = bancoDados.filter(i => i.data !== data);
+            bancoDados.push({ data, ...h, trab, saldo, ehExtraTotal });
         });
 
+        localStorage.setItem('ponto_v3_dados', JSON.stringify(bancoDados));
         document.getElementById('lista-lancamentos').innerHTML = '';
+        novoCard();
         verAba('relatorio', document.querySelectorAll('.tab-btn')[1]);
     }
 
@@ -183,14 +259,15 @@
         filtrados.sort((a,b) => new Date(a.data) - new Date(b.data)).forEach((item) => {
             if(item.saldo > 0) ex += item.saldo; else at += Math.abs(item.saldo);
             const d = new Date(item.data + 'T12:00:00');
-            
+            const classeLinha = item.ehExtraTotal ? 'class="linha-extra"' : '';
+
             corpo.innerHTML += `
-                <tr>
-                    <td class="col-data">${item.data.split('-').reverse().slice(0,2).join('/')} <small>(${d.toLocaleDateString('pt-BR', {weekday: 'short'}).replace('.','')})</small></td>
+                <tr ${classeLinha}>
+                    <td class="col-data">${item.data.split('-').reverse().slice(0,2).join('/')} <small style="color:var(--text-muted)">(${d.toLocaleDateString('pt-BR', {weekday: 'short'}).replace('.','')})</small></td>
                     <td>${item.ent}</td><td>${item.sal}</td><td>${item.ral}</td><td>${item.sfi}</td>
-                    <td>${minParaH(item.trab)}</td>
-                    <td style="color:${item.saldo >= 0 ? 'green' : 'red'}"><b>${minParaH(item.saldo)}</b></td>
-                    <td class="no-print"><button class="btn-apagar" onclick="remover('${item.data}')">X</button></td>
+                    <td><b>${minParaH(item.trab)}</b></td>
+                    <td style="color:${item.saldo >= 0 ? 'var(--success)' : 'var(--danger)'}"><b>${minParaH(item.saldo)}</b></td>
+                    <td class="no-print"><button class="btn-apagar" onclick="remover('${item.data}')">Excluir</button></td>
                 </tr>`;
         });
 
@@ -198,9 +275,12 @@
         document.getElementById('total-atraso').innerText = minParaH(at);
     }
 
-    function remover(dt) { bancoDados = bancoDados.filter(i => i.data !== dt); renderizarTabela(); }
-
-    novoCard();
+    function remover(dt) { 
+        if(!confirm("Remover este registro permanentemente?")) return;
+        bancoDados = bancoDados.filter(i => i.data !== dt); 
+        localStorage.setItem('ponto_v3_dados', JSON.stringify(bancoDados));
+        renderizarTabela(); 
+    }
 </script>
 </body>
 </html>
