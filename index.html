@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ponto Inteligente - Stefanny</title>
+    <style>
+        :root { --primary: #4a7ebb; --bg: #f0f2f5; --danger: #dc3545; --success: #28a745; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
+        .container { width: 100%; max-width: 1150px; background: white; margin: auto; border: 2px solid var(--primary); border-radius: 8px; overflow: hidden; }
+        header { background: var(--primary); color: white; text-align: center; padding: 15px; font-weight: bold; text-transform: uppercase; }
+        .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); background: #d9e1f2; }
+        .summary-item { padding: 10px; border: 0.5px solid #8faadc; text-align: center; }
+        .summary-label { font-size: 0.7rem; font-weight: bold; display: block; margin-bottom: 5px; }
+        .input-carga { width: 85px; font-size: 1rem; text-align: center; border-radius: 4px; border: 1px solid var(--primary); padding: 2px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--primary); color: white; padding: 10px; font-size: 0.8rem; }
+        td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        
+        /* Ajuste da coluna de data e calendário */
+        .col-data { width: 160px; }
+        .input-date-select { border: 1px solid #ccc !important; border-radius: 4px; padding: 2px; font-family: inherit; font-size: 0.85rem; width: 95%; }
+        .dia-semana-label { font-size: 0.75rem; font-weight: bold; color: var(--primary); display: block; margin-top: 3px; }
+
+        input { border: none; text-align: center; font-size: 0.95rem; background: transparent; padding: 5px 0; outline: none; }
+        input:focus { background: #fff9c4; border-radius: 4px; }
+        .res-col { font-weight: bold; background: #f8f9fa; }
+        .dia-especial { background-color: #fff2cc !important; }
+        
+        .btn-container { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        button { padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-add { background: var(--primary); color: white; }
+        .btn-print { background: #6c757d; color: white; }
+        .btn-del { background: var(--danger); color: white; padding: 5px 10px; border-radius: 4px; }
+
+        @media (max-width: 750px) {
+            thead { display: none; }
+            tr { display: block; margin-bottom: 15px; border: 2px solid var(--primary); border-radius: 8px; padding: 10px; background: #fff; }
+            td { display: flex; justify-content: space-between; align-items: center; border: none; border-bottom: 1px solid #eee; padding: 10px 5px; }
+            td::before { content: attr(data-label); font-weight: bold; color: var(--primary); font-size: 0.8rem; }
+            .input-date-select { width: 55%; text-align: right; }
+            input { width: 55%; text-align: right; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>Controle de Ponto - Edição 2026</header>
+    <div class="summary-grid">
+        <div class="summary-item">
+            <span class="summary-label">CARGA DIÁRIA PADRÃO</span>
+            <input type="time" id="carga-horaria" class="input-carga" value="08:00" oninput="calcular()">
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">INFORMAÇÃO</span>
+            <span style="font-size: 0.65rem; color: #555;">Sáb/Dom/Feriado = 100% Extra</span>
+        </div>
+        <div class="summary-item" style="background: #fff2cc;">
+            <span class="summary-label">TOTAL EXTRAS</span>
+            <span id="total-extras-geral" style="font-weight: bold;">00:00</span>
+        </div>
+        <div class="summary-item" style="background: #f8d7da;">
+            <span class="summary-label">TOTAL ATRASOS</span>
+            <span id="total-atrasos-geral" style="font-weight: bold;">00:00</span>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th class="col-data">Data / Calendário</th>
+                <th>Entrada</th>
+                <th>S.Almoço</th>
+                <th>R.Almoço</th>
+                <th>S.Final</th>
+                <th>Total</th>
+                <th>Extra</th>
+                <th>Atraso</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody id="ponto-body"></tbody>
+    </table>
+
+    <div class="btn-container">
+        <button class="btn-add" onclick="adicionarLinha()">+ Adicionar Dia</button>
+        <button class="btn-print" onclick="window.print()">Gerar PDF / Imprimir</button>
+    </div>
+</div>
+
+<script>
+    const feriados2026 = ["01-01", "02-17", "04-03", "04-21", "05-01", "06-04", "09-07", "10-12", "11-02", "11-15", "11-20", "12-25"];
+
+    function hParaMin(hora) {
+        if (!hora) return 0;
+        const [h, m] = hora.split(':').map(Number);
+        return (h * 60) + m;
+    }
+
+    function minParaH(minutos) {
+        const h = Math.floor(minutos / 60);
+        const m = minutos % 60;
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+
+    function calcular() {
+        const linhas = document.querySelectorAll('#ponto-body tr');
+        const cargaPadraoMin = hParaMin(document.getElementById('carga-horaria').value);
+        let extras = 0; let atrasos = 0;
+        const diasSemanaNomes = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+
+        linhas.forEach(linha => {
+            const dateInput = linha.querySelector('.input-date-select');
+            const dataValor = dateInput.value; // Formato YYYY-MM-DD
+            
+            if (!dataValor) return;
+
+            const dataObj = new Date(dataValor + 'T12:00:00'); // T12:00 evita erros de fuso horário
+            const diaSemanaIndex = dataObj.getDay();
+            const diaMesFormatado = dataValor.slice(5); // Pega MM-DD
+
+            // Atualiza o texto do dia da semana abaixo do calendário
+            linha.querySelector('.dia-semana-label').innerText = `(${diasSemanaNomes[diaSemanaIndex]})`;
+
+            const ehFimDeSemana = diaSemanaIndex === 0 || diaSemanaIndex === 6;
+            const ehFeriado = feriados2026.includes(diaMesFormatado);
+            const cargaEfetiva = (ehFimDeSemana || ehFeriado) ? 0 : cargaPadraoMin;
+
+            if(ehFimDeSemana || ehFeriado) linha.classList.add('dia-especial');
+            else linha.classList.remove('dia-especial');
+
+            const inputs = linha.querySelectorAll('input[type="time"]');
+            // Nota: inputs[0] é o da carga lá no topo, os da linha começam do index 1 no seletor interno
+            const hEnt = hParaMin(inputs[0].value);
+            const hSAlm = hParaMin(inputs[1].value);
+            const hRAlm = hParaMin(inputs[2].value);
+            const hSFin = hParaMin(inputs[3].value);
+
+            const totalMin = (hSAlm - hEnt) + (hSFin - hRAlm);
+
+            let e = 0, a = 0;
+            if (totalMin > cargaEfetiva) e = totalMin - cargaEfetiva;
+            else if (totalMin < cargaEfetiva) a = cargaEfetiva - totalMin;
+
+            extras += e; atrasos += a;
+            linha.querySelector('.total-dia').innerText = minParaH(Math.max(0, totalMin));
+            linha.querySelector('.extra-dia').innerText = minParaH(e);
+            linha.querySelector('.atraso-dia').innerText = minParaH(a);
+        });
+
+        document.getElementById('total-extras-geral').innerText = minParaH(extras);
+        document.getElementById('total-atrasos-geral').innerText = minParaH(atrasos);
+    }
+
+    function adicionarLinha() {
+        const tbody = document.getElementById('ponto-body');
+        const tr = document.createElement('tr');
+        
+        // Data de hoje para o input date (YYYY-MM-DD)
+        const hoje = new Date();
+        const yyyy = hoje.getFullYear();
+        const mm = String(hoje.getMonth() + 1).padStart(2, '0');
+        const dd = String(hoje.getDate()).padStart(2, '0');
+        const dataHojeStr = `${yyyy}-${mm}-${dd}`;
+
+        tr.innerHTML = `
+            <td data-label="Data" class="col-data">
+                <input type="date" class="input-date-select" value="${dataHojeStr}" oninput="calcular()">
+                <span class="dia-semana-label"></span>
+            </td>
+            <td data-label="Entrada"><input type="time" value="07:00" oninput="calcular()"></td>
+            <td data-label="S. Almoço"><input type="time" value="12:00" oninput="calcular()"></td>
+            <td data-label="R. Almoço"><input type="time" value="13:00" oninput="calcular()"></td>
+            <td data-label="S. Final"><input type="time" value="16:00" oninput="calcular()"></td>
+            <td data-label="Total" class="res-col total-dia">08:00</td>
+            <td data-label="Extra" class="res-col extra-dia" style="color:var(--success)">00:00</td>
+            <td data-label="Atraso" class="res-col atraso-dia" style="color:var(--danger)">00:00</td>
+            <td class="col-acao"><button class="btn-del" onclick="if(confirm('Apagar dia?')) {this.closest('tr').remove(); calcular();}">X</button></td>
+        `;
+        tbody.appendChild(tr);
+        calcular();
+    }
+
+    adicionarLinha();
+</script>
+</body>
+</html>
